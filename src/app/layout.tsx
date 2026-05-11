@@ -22,8 +22,8 @@ export const metadata: Metadata = {
   description:
     "Level up at MIC workshops and hackathons. Register your interest to receive updates and secure your spot in our upcoming events.",
   icons: {
-    icon: "/mic-logo.png",
-    apple: "/mic-logo.png",
+    icon: "/mic-logo-removedbg.png",
+    apple: "/mic-logo-removedbg.png",
   },
 };
 

@@ -136,7 +136,9 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Interest record not found." }, { status: 404 });
   }
 
-  interestedUser.workshopNames = interestedUser.workshopNames.filter(
+  const workshopNames = interestedUser.workshopNames as string[];
+
+  interestedUser.workshopNames = workshopNames.filter(
     (name) => name !== workshopName,
   );
 

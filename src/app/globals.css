@@ -20,6 +20,17 @@
   --red: #ea4335;
   --green: #34a853;
   --yellow: #fbbc04;
+  --radius: 0px;
+  --card: var(--surface-container);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-container);
+  --popover-foreground: var(--foreground);
+  --border: var(--outline-variant);
+  --input: var(--surface-lowest);
+  --ring: var(--primary);
+  --muted-foreground: var(--muted);
+  --destructive: var(--red);
+  --destructive-foreground: var(--foreground);
 }
 
 * {
@@ -46,6 +57,145 @@ a {
 
 button {
   font: inherit;
+}
+
+.ui-button {
+  align-items: center;
+  border-radius: var(--radius);
+  display: inline-flex;
+  justify-content: center;
+  user-select: none;
+}
+
+.ui-button--default {
+  background: var(--primary-container);
+  color: var(--on-primary);
+}
+
+.ui-button--outline {
+  background: transparent;
+  color: currentColor;
+}
+
+.ui-button--ghost,
+.ui-button--icon {
+  background: transparent;
+  border: 0;
+  color: currentColor;
+}
+
+.ui-button--destructive {
+  background: transparent;
+  color: var(--destructive);
+}
+
+.ui-button--google {
+  background: var(--surface-lowest);
+  color: var(--foreground);
+}
+
+.ui-button--size-default {
+  min-height: 42px;
+}
+
+.ui-button--size-sm {
+  min-height: 34px;
+}
+
+.ui-button--size-lg {
+  min-height: 52px;
+}
+
+.ui-button--size-icon {
+  height: 40px;
+  width: 40px;
+}
+
+.ui-alert {
+  backdrop-filter: blur(16px) saturate(1.15);
+  background: rgba(30, 31, 39, 0.9);
+  border: 1px solid rgba(255, 175, 213, 0.22);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  color: var(--foreground);
+  padding: 16px 18px;
+  position: relative;
+}
+
+.ui-alert::before {
+  background: var(--alert-accent, var(--primary));
+  content: "";
+  inset: 0 auto 0 0;
+  position: absolute;
+  width: 4px;
+}
+
+.ui-alert--success {
+  --alert-accent: var(--green);
+}
+
+.ui-alert--destructive {
+  --alert-accent: var(--red);
+}
+
+.ui-alert--default {
+  --alert-accent: var(--primary);
+}
+
+.ui-alert__title {
+  color: var(--alert-accent, var(--primary));
+  font-family: var(--font-press-start), cursive;
+  font-size: 10px;
+  line-height: 1.4;
+  margin: 0 28px 8px 0;
+  text-transform: uppercase;
+}
+
+.ui-alert__description {
+  color: var(--foreground);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.alert-stack {
+  display: grid;
+  gap: 12px;
+  pointer-events: none;
+  position: fixed;
+  right: 24px;
+  top: 96px;
+  width: min(360px, calc(100vw - 48px));
+  z-index: 260;
+}
+
+.alert-toast {
+  animation: toast-in 280ms ease-out;
+  pointer-events: auto;
+}
+
+.alert-toast__close {
+  background: transparent;
+  border: 0;
+  color: var(--outline);
+  cursor: pointer;
+  position: absolute;
+  right: 12px;
+  top: 12px;
+}
+
+.alert-toast__close:hover {
+  color: var(--foreground);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .symbol-icon {
@@ -87,7 +237,7 @@ button {
   inset: 0;
   opacity: 0.3;
   z-index: 0;
-  animation: stars-drift 100s linear infinite alternate;
+  animation: stars-drift 140s linear infinite alternate;
 }
 
 .neon-grid {
@@ -103,7 +253,7 @@ button {
   width: 200%;
   z-index: 0;
   mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
-  animation: grid-move 20s linear infinite;
+  animation: grid-move 32s linear infinite;
 }
 
 .synth-sun {
@@ -122,7 +272,7 @@ button {
 }
 
 .scanline-overlay {
-  animation: scanline 1s linear infinite;
+  animation: scanline 2s linear infinite;
   background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%);
   background-size: 100% 4px;
   inset: 0;
@@ -137,7 +287,7 @@ button {
 }
 
 .retro-icon {
-  animation: float-random 15s infinite linear;
+  animation: float-random 22s infinite linear;
   font-size: 32px;
   position: absolute;
 }
@@ -214,7 +364,7 @@ button {
   font-size: 10px;
   line-height: 1;
   text-transform: uppercase;
-  transition: color 160ms ease;
+  transition: color 220ms ease;
 }
 
 .nav-links a:hover,
@@ -223,8 +373,7 @@ button {
 }
 
 .nav-links a.active {
-  border-bottom: 2px solid var(--primary);
-  padding-bottom: 5px;
+  text-decoration: none;
 }
 
 .arcade-btn {
@@ -237,7 +386,7 @@ button {
   letter-spacing: 0.08em;
   padding: 12px 24px;
   text-transform: uppercase;
-  transition: box-shadow 160ms ease, transform 160ms ease;
+  transition: box-shadow 220ms ease, transform 220ms ease;
 }
 
 .arcade-btn:hover {
@@ -255,10 +404,6 @@ button {
 
 .account-icon {
   font-size: 32px;
-}
-
-.member-menu {
-  position: relative;
 }
 
 .member-menu__button {
@@ -283,17 +428,21 @@ button {
   border: 1px solid rgba(255, 175, 213, 0.35);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
   color: var(--foreground);
-  opacity: 0;
   padding: 14px 16px;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  top: calc(100% + 14px);
-  transform: translateY(-6px);
-  transition: opacity 160ms ease, transform 160ms ease, visibility 160ms ease;
-  visibility: hidden;
+  transform-origin: var(--radix-popover-content-transform-origin);
+  transition: opacity 220ms ease, transform 220ms ease, visibility 220ms ease;
   width: max(220px, 18vw);
   z-index: 90;
+}
+
+.member-popover[data-state="closed"] {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.member-popover[data-state="open"] {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .member-popover::before {
@@ -341,7 +490,7 @@ button {
   margin-top: 14px;
   padding: 10px 12px;
   text-transform: uppercase;
-  transition: background 160ms ease, box-shadow 160ms ease, color 160ms ease;
+  transition: background 220ms ease, box-shadow 220ms ease, color 220ms ease;
   width: 100%;
 }
 
@@ -349,15 +498,6 @@ button {
   background: rgba(234, 67, 53, 0.12);
   box-shadow: 0 0 16px rgba(234, 67, 53, 0.32);
   color: var(--foreground);
-}
-
-.member-menu:hover .member-popover,
-.member-menu:focus-within .member-popover,
-.member-menu.open .member-popover {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
-  visibility: visible;
 }
 
 .main-shell {
@@ -383,12 +523,11 @@ button {
   box-shadow: 0 0 30px rgba(249, 77, 180, 0.25);
   display: grid;
   margin-bottom: 32px;
-  padding: 24px;
   place-items: center;
 }
 
 .hero h1 {
-  animation: hero-pulse 3s ease-in-out infinite alternate;
+  animation: hero-pulse 5s ease-in-out infinite alternate;
   color: var(--blue);
   font-family: var(--font-press-start), cursive;
   font-size: clamp(36px, 5vw, 64px);
@@ -439,6 +578,10 @@ button {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.event-grid--saved {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .event-card,
 .hack-card,
 .faq-question {
@@ -447,7 +590,7 @@ button {
   color: inherit;
   cursor: pointer;
   text-align: left;
-  transition: background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  transition: background 220ms ease, box-shadow 220ms ease, transform 220ms ease;
 }
 
 .event-card {
@@ -513,6 +656,21 @@ button {
   margin-top: 32px;
   padding-top: 16px;
   text-transform: uppercase;
+}
+
+.saved-events-empty {
+  background: rgba(30, 31, 39, 0.7);
+  border: 1px solid rgba(255, 175, 213, 0.22);
+  color: var(--muted);
+  padding: 28px;
+}
+
+.saved-events-empty p {
+  margin: 0;
+}
+
+.saved-events-empty p + p {
+  margin-top: 8px;
 }
 
 .tag {
@@ -599,13 +757,12 @@ button {
 
 .faq-list {
   display: grid;
-  gap: 24px;
-  grid-template-columns: 1fr;
+  gap: 16px;
   width: 100%;
 }
 
 .hack-card {
-  animation: pulse-glow 2s infinite alternate;
+  animation: pulse-glow 3.5s infinite alternate;
   border: 3px solid var(--yellow);
   color: var(--yellow);
   justify-self: center;
@@ -659,7 +816,7 @@ button {
 }
 
 .glow-title {
-  animation: hero-pulse 3s ease-in-out infinite alternate;
+  animation: hero-pulse 5s ease-in-out infinite alternate;
   text-shadow: 0 0 15px rgba(66, 133, 244, 0.6), 0 0 30px rgba(66, 133, 244, 0.3);
 }
 
@@ -668,14 +825,17 @@ button {
 }
 
 .faq-item {
-  min-width: 0;
+  background: rgba(26, 27, 35, 0.72);
+  border: 1px solid var(--outline-variant);
+  overflow: hidden;
 }
 
 .faq-question {
   align-items: center;
   display: flex;
   justify-content: space-between;
-  padding: 24px;
+  min-height: 64px;
+  padding: 0 24px;
   width: 100%;
 }
 
@@ -688,10 +848,10 @@ button {
 .faq-icon {
   flex: 0 0 auto;
   transform: rotate(0deg);
-  transition: transform 180ms ease;
+  transition: transform 240ms ease;
 }
 
-.faq-icon.open {
+.faq-question[data-state="open"] .faq-icon {
   transform: rotate(180deg);
 }
 
@@ -700,11 +860,15 @@ button {
   display: grid;
   grid-template-rows: 0fr;
   overflow: hidden;
-  transition: grid-template-rows 220ms ease;
+  transition: grid-template-rows 300ms ease;
 }
 
-.faq-answer.open {
+.faq-answer[data-state="open"] {
   grid-template-rows: 1fr;
+}
+
+.accordion-content-inner {
+  min-height: 0;
 }
 
 .faq-answer p {
@@ -715,7 +879,7 @@ button {
   padding: 0 24px;
 }
 
-.faq-answer.open p {
+.faq-answer[data-state="open"] p {
   padding-bottom: 24px;
   padding-top: 24px;
 }
@@ -763,7 +927,7 @@ button {
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  transition: color 160ms ease;
+  transition: color 220ms ease;
 }
 
 .footer-links a:hover {
@@ -775,29 +939,30 @@ button {
   margin: 0;
 }
 
-.modal-backdrop {
+.dialog-overlay {
   align-items: center;
   backdrop-filter: blur(7px) saturate(1.1);
   background: rgba(13, 14, 21, 0.72);
-  display: flex;
   inset: 0;
-  justify-content: center;
-  padding: 24px;
   position: fixed;
   z-index: 200;
 }
 
 .modal-panel {
-  animation: modal-in 180ms ease-out;
+  animation: modal-in 280ms ease-out;
   backdrop-filter: blur(14px) saturate(1.1);
   --modal-accent: var(--primary);
   background: rgba(30, 31, 39, 0.82);
   border: 4px solid var(--modal-accent);
   box-shadow: 0 0 50px color-mix(in srgb, var(--modal-accent) 22%, transparent);
+  left: 50%;
   max-width: 600px;
   padding: 40px;
-  position: relative;
+  position: fixed;
+  top: 50%;
+  transform: translate(-50%, -50%);
   width: min(100%, 600px);
+  z-index: 210;
 }
 
 .modal-panel--blue {
@@ -911,7 +1076,7 @@ button {
 }
 
 .auth-card {
-  animation: modal-in 180ms ease-out;
+  animation: modal-in 280ms ease-out;
   background: rgba(30, 31, 39, 0.94);
   border: 4px solid var(--primary);
   box-shadow:
@@ -974,7 +1139,7 @@ button {
   gap: 14px;
   justify-content: center;
   padding: 16px;
-  transition: box-shadow 160ms ease, transform 160ms ease, background 160ms ease;
+  transition: box-shadow 220ms ease, transform 220ms ease, background 220ms ease;
   width: 100%;
 }
 
@@ -1039,6 +1204,37 @@ button {
   text-transform: uppercase;
 }
 
+.dialog-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.dialog-footer .ui-button {
+  min-width: 160px;
+}
+
+.modal-secondary {
+  border: 2px solid var(--modal-accent);
+  color: var(--modal-accent);
+}
+
+.modal-secondary:hover {
+  background: color-mix(in srgb, var(--modal-accent) 12%, transparent);
+}
+
+.modal-destructive {
+  border: 2px solid var(--red);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--red) 30%, transparent);
+}
+
+.modal-destructive:hover {
+  background: rgba(234, 67, 53, 0.12);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--red) 38%, transparent);
+}
+
 .modal-actions {
   display: flex;
   gap: 24px;
@@ -1051,7 +1247,7 @@ button {
   font-size: 12px;
   padding: 16px;
   text-transform: uppercase;
-  transition: filter 160ms ease, transform 160ms ease;
+  transition: filter 220ms ease, transform 220ms ease;
 }
 
 .modal-actions button:first-child {
@@ -1078,7 +1274,7 @@ button {
     background-position: 0 0;
   }
   100% {
-    background-position: 0 4px;
+    background-position: 0 2px;
   }
 }
 
@@ -1087,7 +1283,7 @@ button {
     background-position: 0 0;
   }
   100% {
-    background-position: 0 80px;
+    background-position: 0 48px;
   }
 }
 
@@ -1096,7 +1292,7 @@ button {
     transform: translateY(0);
   }
   to {
-    transform: translateY(-50px);
+    transform: translateY(-24px);
   }
 }
 
@@ -1111,7 +1307,7 @@ button {
   }
   100% {
     opacity: 0;
-    transform: translate(100px, -200px) rotate(360deg);
+    transform: translate(80px, -140px) rotate(360deg);
   }
 }
 
@@ -1120,7 +1316,7 @@ button {
     box-shadow: 0 0 20px rgba(251, 188, 4, 0.3);
   }
   to {
-    box-shadow: 0 0 40px rgba(251, 188, 4, 0.6);
+    box-shadow: 0 0 32px rgba(251, 188, 4, 0.5);
   }
 }
 
@@ -1130,19 +1326,19 @@ button {
     transform: scale(1);
   }
   to {
-    filter: brightness(1.2);
-    transform: scale(1.02);
+    filter: brightness(1.1);
+    transform: scale(1.01);
   }
 }
 
 @keyframes modal-in {
   from {
     opacity: 0;
-    transform: scale(0.96);
+    transform: translate(-50%, -50%) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 

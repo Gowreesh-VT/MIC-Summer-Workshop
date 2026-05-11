@@ -21,6 +21,10 @@ export const metadata: Metadata = {
   title: "MIC Workshop Registration Portal",
   description:
     "Arcade-inspired Microsoft Innovations Club workshop and hackathon registration portal.",
+  icons: {
+    icon: "/mic-logo.png",
+    apple: "/mic-logo.png",
+  },
 };
 
 export default function RootLayout({

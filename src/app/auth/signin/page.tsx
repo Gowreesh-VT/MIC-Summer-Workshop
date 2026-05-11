@@ -4,6 +4,7 @@ import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { Button } from "@/components/ui/button";
 
 function GoogleGlyph() {
   return (
@@ -42,7 +43,7 @@ function SignInCard() {
 
       <section className="auth-card" aria-labelledby="auth-title">
         <div className="auth-logo-frame">
-          <Image src="/stitch/mic-logo.png" alt="MIC Logo" width={72} height={72} priority />
+          <Image src="/mic-logo.png" alt="MIC Logo" width={72} height={72} priority />
         </div>
         <span className="tag tag-primary">Player Login</span>
         <h1 id="auth-title">Enter The Arcade</h1>
@@ -53,14 +54,15 @@ function SignInCard() {
         {error ? (
           <p className="auth-error">Google login failed. Please try again.</p>
         ) : null}
-        <button
+        <Button
           className="google-login-button"
           onClick={() => signIn("google", { callbackUrl })}
           type="button"
+          variant="google"
         >
           <GoogleGlyph />
           <span>Continue With Google</span>
-        </button>
+        </Button>
         <p className="auth-footnote">MIC Workshop Registration Portal</p>
       </section>
     </main>

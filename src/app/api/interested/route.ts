@@ -101,3 +101,63 @@ export async function POST(request: Request) {
     { status: 201 },
   );
 }
+
+export async function DELETE(request: Request) {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = (await request.json()) as {
+    workshopName?: string;
+  };
+
+  const workshopName = body.workshopName?.trim();
+
+  if (!workshopName) {
+    return NextResponse.json(
+      { error: "Please provide a workshop name." },
+      { status: 400 },
+    );
+  }
+
+  await connectMongo();
+
+  const interestedUser = await InterestedUser.findOne({
+    email: session.user.email.toLowerCase(),
+  }).select("workshopNames");
+
+  if (!interestedUser) {
+    return NextResponse.json({ error: "Interest record not found." }, { status: 404 });
+  }
+
+  if (!interestedUser.workshopNames?.includes(workshopName)) {
+    return NextResponse.json({ error: "Interest record not found." }, { status: 404 });
+  }
+
+  interestedUser.workshopNames = interestedUser.workshopNames.filter(
+    (name) => name !== workshopName,
+  );
+
+  if (interestedUser.workshopNames.length === 0) {
+    await InterestedUser.deleteOne({ _id: interestedUser._id });
+    return NextResponse.json(
+      {
+        message: "Interest removed successfully.",
+        workshopNames: [],
+      },
+      { status: 200 },
+    );
+  }
+
+  await interestedUser.save();
+
+  return NextResponse.json(
+    {
+      message: "Interest removed successfully.",
+      workshopNames: interestedUser.workshopNames,
+    },
+    { status: 200 },
+  );
+}

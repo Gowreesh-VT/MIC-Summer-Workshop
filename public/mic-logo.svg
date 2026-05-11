@@ -1,0 +1,52 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow-red" x="0" y="0" width="512" height="512" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="10" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <filter id="glow-yellow" x="0" y="0" width="512" height="512" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="10" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <filter id="glow-green" x="0" y="0" width="512" height="512" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="10" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <filter id="glow-blue" x="0" y="0" width="512" height="512" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="10" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <linearGradient id="red" x1="92" y1="256" x2="208" y2="256" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF5B2E" />
+      <stop offset="1" stop-color="#FF3D47" />
+    </linearGradient>
+    <linearGradient id="yellow" x1="192" y1="128" x2="320" y2="240" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFD84A" />
+      <stop offset="1" stop-color="#66C85A" />
+    </linearGradient>
+    <linearGradient id="green" x1="192" y1="272" x2="320" y2="384" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#44C15D" />
+      <stop offset="1" stop-color="#2EA34C" />
+    </linearGradient>
+    <linearGradient id="blue" x1="304" y1="256" x2="420" y2="256" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5AB7FF" />
+      <stop offset="1" stop-color="#346CFF" />
+    </linearGradient>
+  </defs>
+  <polygon filter="url(#glow-red)" points="118,256 148,204 208,204 238,256 208,308 148,308" fill="url(#red)"/>
+  <polygon filter="url(#glow-yellow)" points="206,160 256,132 306,160 336,212 306,264 256,292 206,264 176,212" fill="url(#yellow)"/>
+  <polygon filter="url(#glow-green)" points="206,300 256,272 306,300 336,352 306,404 256,432 206,404 176,352" fill="url(#green)"/>
+  <polygon filter="url(#glow-blue)" points="304,256 334,204 394,204 424,256 394,308 334,308" fill="url(#blue)"/>
+</svg>

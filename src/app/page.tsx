@@ -27,30 +27,68 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { departments, hackathons, type EventCard } from "@/lib/event-data";
 import { EventTile, HackathonTile, SymbolIcon } from "@/components/event-cards";
 
-const faqs = [
+type FaqAccent = "blue" | "green" | "red" | "yellow";
+
+type FaqItem = {
+  question: string;
+  answer: string;
+  accent: FaqAccent;
+};
+
+const faqs: FaqItem[] = [
   {
-    question: "Who can participate?",
+    question: "How will the online workshop be conducted?",
     answer:
-      "Anyone with a passion for learning and technology! Our events are open to all skill levels, from complete beginners to advanced developers.",
-    accent: "blue" as const,
+      "The sessions are hosted live on Google Meet (we may also use Zoom or Microsoft Teams for specific tracks). A join link is emailed to you after you register.",
+    accent: "blue",
   },
   {
-    question: "Is there a registration fee?",
+    question: "Will the sessions be recorded?",
     answer:
-      "No, all our workshops and hackathons are completely free to attend. Just register and show up ready to learn!",
-    accent: "green" as const,
+      "Yes. All live sessions are recorded and shared with registered participants within 24 hours so you can review the material at your own pace.",
+    accent: "green",
   },
   {
-    question: "Do I need a team for hackathons?",
+    question: "How long is each session?",
     answer:
-      "You can join with a pre-formed team or register solo. We host team-building sessions before hackathons to help you find teammates.",
-    accent: "red" as const,
+      "Each session runs for about two hours, including a dedicated Q&A segment at the end.",
+    accent: "red",
   },
   {
-    question: "What should I bring?",
+    question: "Do I need any prior coding experience?",
     answer:
-      "Bring your laptop, charger, and a collaborative mindset. We'll provide the rest, including food, drinks, and mentorship.",
-    accent: "yellow" as const,
+      "No—this track is beginner-friendly. We start from the fundamentals and build up step by step.",
+    accent: "yellow",
+  },
+  {
+    question: "What software or tools do I need to install beforehand?",
+    answer:
+      "Please use a stable internet connection, a modern web browser, and VS Code. We recommend installing Node.js if you want to code along with the exercises.",
+    accent: "blue",
+  },
+  {
+    question: "Do I need a powerful laptop to participate?",
+    answer:
+      "Not at all. Web development mainly needs a text editor and a browser, so any standard laptop works well.",
+    accent: "green",
+  },
+  {
+    question: "What will we be building during the workshop?",
+    answer:
+      "We take a hands-on approach. By the end of the workshop you will have built and deployed a real project—such as a personal portfolio or a Next.js web app—from scratch.",
+    accent: "red",
+  },
+  {
+    question: "How can I ask questions if I get stuck on a coding error?",
+    answer:
+      "We run a dedicated Discord (and WhatsApp) group for participants. Mentors monitor the chat during live sessions so you can get unstuck quickly.",
+    accent: "yellow",
+  },
+  {
+    question: "Will I receive a certificate of completion?",
+    answer:
+      "Yes. Participants who complete the final project submission receive a verified certificate from the web development department.",
+    accent: "blue",
   },
 ];
 

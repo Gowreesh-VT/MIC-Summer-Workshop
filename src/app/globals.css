@@ -306,13 +306,28 @@ button {
 
 .site-nav {
   align-items: center;
-  display: flex;
-  gap: 24px;
+  column-gap: 24px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   height: 80px;
-  justify-content: space-between;
   margin: 0 auto;
   max-width: 1280px;
   padding: 0 64px;
+}
+
+.site-nav > .brand {
+  grid-column: 1;
+  justify-self: start;
+}
+
+.site-nav > .nav-links {
+  grid-column: 2;
+  justify-self: center;
+}
+
+.site-nav > .nav-actions {
+  grid-column: 3;
+  justify-self: end;
 }
 
 .brand,
@@ -1012,6 +1027,16 @@ button {
 
 .mobile-panel {
   max-width: 520px;
+}
+
+.interest-confirm-panel {
+  max-width: 420px;
+  padding: 28px 32px 32px;
+  width: min(100%, 420px);
+}
+
+.interest-confirm-actions {
+  margin-top: 4px;
 }
 
 .mobile-field {

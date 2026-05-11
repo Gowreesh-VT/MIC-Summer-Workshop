@@ -121,6 +121,13 @@ export function SymbolIcon({
         <path d="m12 13 1 2 2 .5-1.5 1.5.4 2-1.9-1-1.9 1 .4-2L9 15.5l2-.5 1-2z" />
       </>
     ),
+    menu: (
+      <>
+        <path d="M4 6h16" />
+        <path d="M4 12h16" />
+        <path d="M4 18h16" />
+      </>
+    ),
     neurology: (
       <>
         <path d="M8 6a4 4 0 0 1 8 0" />

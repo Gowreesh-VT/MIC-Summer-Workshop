@@ -167,12 +167,6 @@ export default function Home() {
   }, [session?.user?.email]);
 
   useEffect(() => {
-    if (!selectedEvent) {
-      setInterestConfirmOpen(false);
-    }
-  }, [selectedEvent]);
-
-  useEffect(() => {
     if (!navOpen) {
       return;
     }

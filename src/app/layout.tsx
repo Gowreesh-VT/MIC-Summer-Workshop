@@ -20,7 +20,7 @@ const pressStart = Press_Start_2P({
 export const metadata: Metadata = {
   title: "MIC Workshop Registration Portal",
   description:
-    "Arcade-inspired Microsoft Innovations Club workshop and hackathon registration portal.",
+    "Level up at MIC workshops and hackathons. Register your interest to receive updates and secure your spot in our upcoming events.",
   icons: {
     icon: "/mic-logo.png",
     apple: "/mic-logo.png",

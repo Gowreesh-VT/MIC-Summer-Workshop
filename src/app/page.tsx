@@ -39,7 +39,7 @@ const faqs: FaqItem[] = [
   {
     question: "How will the online workshop be conducted?",
     answer:
-      "The sessions are hosted live on Google Meet (we may also use Zoom or Microsoft Teams for specific tracks). A join link is emailed to you after you register.",
+      "The sessions are hosted live on Google Meet (we may also Microsoft Teams for specific tracks). A join link is emailed to you after you register.",
     accent: "blue",
   },
   {
@@ -90,6 +90,12 @@ const faqs: FaqItem[] = [
       "Yes. Participants who complete the final project submission receive a verified certificate from the web development department.",
     accent: "blue",
   },
+  {
+    question: "Can I participate in hackathons alone or do I need a team?",
+    answer: 
+        "You can join with a pre-formed team or register solo. We host team-building sessions before hackathons to help you find teammates.",
+    accent: "green",
+  },
 ];
 
 type InterestAlert = {
@@ -109,6 +115,7 @@ export default function Home() {
   const [savedWorkshopNames, setSavedWorkshopNames] = useState<string[]>([]);
   const [interestAlert, setInterestAlert] = useState<InterestAlert | null>(null);
   const [interestConfirmOpen, setInterestConfirmOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const interestSubmitInFlightRef = useRef(false);
   const modalAccent = selectedEvent?.accent ?? "blue";
   const currentWorkshopIsSaved = Boolean(
@@ -164,6 +171,19 @@ export default function Home() {
       setInterestConfirmOpen(false);
     }
   }, [selectedEvent]);
+
+  useEffect(() => {
+    if (!navOpen) {
+      return;
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setNavOpen(false);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [navOpen]);
 
   useEffect(() => {
     async function handleAuthMessage(event: MessageEvent) {
@@ -343,18 +363,44 @@ export default function Home() {
       <div className="scanline-overlay" />
 
       <header className="site-header">
+        <div
+          aria-hidden={!navOpen}
+          className={`nav-backdrop${navOpen ? " nav-backdrop--open" : ""}`}
+          onClick={() => setNavOpen(false)}
+        />
         <nav className="site-nav" aria-label="Primary navigation">
           <a className="brand" href="#top">
             <Image src="/mic-logo.png" alt="MIC Hexagon Logo" width={40} height={40} />
             <span>Microsoft Innovations Club</span>
           </a>
-          <div className="nav-links">
-            <a className="active" href="#workshops">
+          <button
+            aria-controls="site-nav-links"
+            aria-expanded={navOpen}
+            aria-label={navOpen ? "Close menu" : "Open menu"}
+            className="nav-menu-toggle"
+            onClick={() => setNavOpen((open) => !open)}
+            type="button"
+          >
+            <SymbolIcon className="icon" name={navOpen ? "close" : "menu"} />
+          </button>
+          <div
+            className={`nav-links${navOpen ? " nav-links--open" : ""}`}
+            id="site-nav-links"
+          >
+            <a className="active" href="#workshops" onClick={() => setNavOpen(false)}>
               Workshops
             </a>
-            {session?.user?.email ? <a href="/events">Interested Events</a> : null}
-            <a href="#hackathons">Hackathons</a>
-            <a href="#faq">FAQ</a>
+            {session?.user?.email ? (
+              <a href="/events" onClick={() => setNavOpen(false)}>
+                Interested Events
+              </a>
+            ) : null}
+            <a href="#hackathons" onClick={() => setNavOpen(false)}>
+              Hackathons
+            </a>
+            <a href="#faq" onClick={() => setNavOpen(false)}>
+              FAQ
+            </a>
           </div>
           <div className="nav-actions">
             {/* <Button

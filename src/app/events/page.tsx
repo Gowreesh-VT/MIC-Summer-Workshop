@@ -33,6 +33,7 @@ function EventPageSymbolIcon({
 
 export default function EventsPage() {
   const { data: session, update } = useSession();
+  const [navOpen, setNavOpen] = useState(false);
   const [memberMenuOpen, setMemberMenuOpen] = useState(false);
   const [savedWorkshopNames, setSavedWorkshopNames] = useState<string[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<EventCard | null>(null);
@@ -80,6 +81,19 @@ export default function EventsPage() {
     window.addEventListener("message", handleAuthMessage);
     return () => window.removeEventListener("message", handleAuthMessage);
   }, [update]);
+
+  useEffect(() => {
+    if (!navOpen) {
+      return;
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setNavOpen(false);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [navOpen]);
 
   const savedEvents = [...departments.flatMap((department) => department.events), ...hackathons].filter(
     (event) => savedWorkshopNames.includes(event.title),
@@ -130,23 +144,47 @@ export default function EventsPage() {
       <div className="scanline-overlay" />
 
       <header className="site-header">
+        <div
+          aria-hidden={!navOpen}
+          className={`nav-backdrop${navOpen ? " nav-backdrop--open" : ""}`}
+          onClick={() => setNavOpen(false)}
+        />
         <nav className="site-nav" aria-label="Primary navigation">
           <Link className="brand" href="/">
             <Image src="/mic-logo.png" alt="MIC Hexagon Logo" width={40} height={40} />
             <span>Microsoft Innovations Club</span>
           </Link>
-          <div className="nav-links">
-            <Link href="/">Workshops</Link>
-            <Link className="active" href="/events">
+          <button
+            aria-controls="site-nav-links"
+            aria-expanded={navOpen}
+            aria-label={navOpen ? "Close menu" : "Open menu"}
+            className="nav-menu-toggle"
+            onClick={() => setNavOpen((open) => !open)}
+            type="button"
+          >
+            <EventPageSymbolIcon className="icon" name={navOpen ? "close" : "menu"} />
+          </button>
+          <div
+            className={`nav-links${navOpen ? " nav-links--open" : ""}`}
+            id="site-nav-links"
+          >
+            <Link href="/" onClick={() => setNavOpen(false)}>
+              Workshops
+            </Link>
+            <Link className="active" href="/events" onClick={() => setNavOpen(false)}>
               Events
             </Link>
-            <Link href="/#hackathons">Hackathons</Link>
-            <Link href="/#faq">FAQ</Link>
+            <Link href="/#hackathons" onClick={() => setNavOpen(false)}>
+              Hackathons
+            </Link>
+            <Link href="/#faq" onClick={() => setNavOpen(false)}>
+              FAQ
+            </Link>
           </div>
           <div className="nav-actions">
-            <Button className="arcade-btn" disabled title="Registration links are coming soon." type="button">
+            {/* <Button className="arcade-btn" disabled title="Registration links are coming soon." type="button">
               Register
-            </Button>
+            </Button> */}
             <Popover open={memberMenuOpen} onOpenChange={setMemberMenuOpen}>
               <PopoverTrigger asChild>
                 <Button

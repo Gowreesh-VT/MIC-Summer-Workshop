@@ -32,7 +32,7 @@ function EventPageSymbolIcon({
 }
 
 export default function EventsPage() {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const [memberMenuOpen, setMemberMenuOpen] = useState(false);
   const [savedWorkshopNames, setSavedWorkshopNames] = useState<string[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<EventCard | null>(null);
@@ -72,13 +72,14 @@ export default function EventsPage() {
 
       const updatedSession = await getSession();
       if (updatedSession?.user?.email) {
+        await update();
         setMemberMenuOpen(false);
       }
     }
 
     window.addEventListener("message", handleAuthMessage);
     return () => window.removeEventListener("message", handleAuthMessage);
-  }, []);
+  }, [update]);
 
   const savedEvents = [...departments.flatMap((department) => department.events), ...hackathons].filter(
     (event) => savedWorkshopNames.includes(event.title),

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { getSession, signOut, useSession } from "next-auth/react";
 import type { FormEvent } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -61,7 +61,7 @@ type InterestAlert = {
 };
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const [selectedEvent, setSelectedEvent] = useState<EventCard | null>(null);
   const [mobileModalOpen, setMobileModalOpen] = useState(false);
   const [mobileNumber, setMobileNumber] = useState("");
@@ -70,6 +70,8 @@ export default function Home() {
   const [memberMenuOpen, setMemberMenuOpen] = useState(false);
   const [savedWorkshopNames, setSavedWorkshopNames] = useState<string[]>([]);
   const [interestAlert, setInterestAlert] = useState<InterestAlert | null>(null);
+  const [interestConfirmOpen, setInterestConfirmOpen] = useState(false);
+  const interestSubmitInFlightRef = useRef(false);
   const modalAccent = selectedEvent?.accent ?? "blue";
   const currentWorkshopIsSaved = Boolean(
     selectedEvent && savedWorkshopNames.includes(selectedEvent.title),
@@ -81,6 +83,7 @@ export default function Home() {
     setMobileModalOpen(false);
     setMobileNumber("");
     setInterestAlert(null);
+    setInterestConfirmOpen(false);
     setSelectedEvent(event);
   }
 
@@ -119,6 +122,12 @@ export default function Home() {
   }, [session?.user?.email]);
 
   useEffect(() => {
+    if (!selectedEvent) {
+      setInterestConfirmOpen(false);
+    }
+  }, [selectedEvent]);
+
+  useEffect(() => {
     async function handleAuthMessage(event: MessageEvent) {
       if (event.origin !== window.location.origin) {
         return;
@@ -130,6 +139,7 @@ export default function Home() {
 
       const updatedSession = await getSession();
       if (updatedSession?.user?.email) {
+        await update();
         if (selectedEvent) {
           void submitInterest(selectedEvent.title);
         }
@@ -140,15 +150,20 @@ export default function Home() {
 
     window.addEventListener("message", handleAuthMessage);
     return () => window.removeEventListener("message", handleAuthMessage);
-  }, [selectedEvent]);
+  }, [selectedEvent, update]);
 
-  function handleInterestedClick() {
+  async function handleInterestedClick() {
     setInterestError("");
     setInterestStatus("idle");
 
-    if (session?.user?.email) {
+    const currentSession = session?.user?.email ? session : await getSession();
+    if (!session?.user?.email && currentSession?.user?.email) {
+      await update();
+    }
+
+    if (currentSession?.user?.email) {
       if (selectedEvent) {
-        void submitInterest(selectedEvent.title);
+        setInterestConfirmOpen(true);
       }
       return;
     }
@@ -167,52 +182,63 @@ export default function Home() {
   }
 
   async function submitInterest(workshopName: string, mobileNumber?: string) {
+    if (interestSubmitInFlightRef.current) {
+      return;
+    }
+    interestSubmitInFlightRef.current = true;
     setInterestError("");
     setInterestStatus("loading");
 
-    const response = await fetch("/api/interested", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        mobileNumber,
-        workshopName,
-      }),
-    });
+    try {
+      const response = await fetch("/api/interested", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mobileNumber,
+          workshopName,
+        }),
+      });
 
-    const contentType = response.headers.get("content-type") ?? "";
-    const data = contentType.includes("application/json")
-      ? ((await response.json()) as {
-          error?: string;
-          requiresMobileNumber?: boolean;
-        })
-      : { error: "Could not save your interest. Please try again." };
+      const contentType = response.headers.get("content-type") ?? "";
+      const data = contentType.includes("application/json")
+        ? ((await response.json()) as {
+            error?: string;
+            requiresMobileNumber?: boolean;
+          })
+        : { error: "Could not save your interest. Please try again." };
 
-    if (!response.ok) {
-      setInterestStatus("idle");
+      if (!response.ok) {
+        setInterestStatus("idle");
 
-      if (data.requiresMobileNumber) {
-        setMobileModalOpen(true);
+        if (data.requiresMobileNumber) {
+          setInterestConfirmOpen(false);
+          setMobileModalOpen(true);
+          return;
+        }
+
+        setInterestConfirmOpen(false);
+        setInterestError(data.error ?? "Could not save your interest. Please try again.");
         return;
       }
 
-      setInterestError(data.error ?? "Could not save your interest. Please try again.");
-      return;
+      setInterestStatus("success");
+      setMobileNumber("");
+      setMobileModalOpen(false);
+      setInterestConfirmOpen(false);
+      setSavedWorkshopNames((currentNames) =>
+        currentNames.includes(workshopName) ? currentNames : [...currentNames, workshopName],
+      );
+      setInterestAlert({
+        id: `${workshopName}-${Date.now()}`,
+        title: "Interest saved",
+        description: `Interest saved for ${workshopName}.`,
+      });
+      setSelectedEvent(null);
+    } finally {
+      interestSubmitInFlightRef.current = false;
     }
-
-    setInterestStatus("success");
-    setMobileNumber("");
-    setMobileModalOpen(false);
-    setSavedWorkshopNames((currentNames) =>
-      currentNames.includes(workshopName) ? currentNames : [...currentNames, workshopName],
-    );
-    setInterestAlert({
-      id: `${workshopName}-${Date.now()}`,
-      title: "Interest saved",
-      description: `Interest saved for ${workshopName}.`,
-    });
-    setSelectedEvent(null);
   }
 
   async function handleMobileSubmit(event: FormEvent<HTMLFormElement>) {
@@ -230,6 +256,13 @@ export default function Home() {
     }
 
     await submitInterest(selectedEvent.title, mobileNumber);
+  }
+
+  function handleInterestConfirmProceed() {
+    if (!selectedEvent) {
+      return;
+    }
+    void submitInterest(selectedEvent.title);
   }
 
   return (
@@ -281,19 +314,19 @@ export default function Home() {
             <a className="active" href="#workshops">
               Workshops
             </a>
-            {session?.user?.email ? <a href="/events">Events</a> : null}
+            {session?.user?.email ? <a href="/events">Interested Events</a> : null}
             <a href="#hackathons">Hackathons</a>
             <a href="#faq">FAQ</a>
           </div>
           <div className="nav-actions">
-            <Button
+            {/* <Button
               className="arcade-btn"
               disabled
               title="Registration links are coming soon."
               type="button"
             >
               Register
-            </Button>
+            </Button> */}
             <Popover open={memberMenuOpen} onOpenChange={setMemberMenuOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -411,8 +444,13 @@ export default function Home() {
       </footer>
 
       <Dialog
-        open={Boolean(selectedEvent) && !mobileModalOpen}
-        onOpenChange={(open) => !open && !mobileModalOpen && setSelectedEvent(null)}
+        open={Boolean(selectedEvent) && !mobileModalOpen && !interestConfirmOpen}
+        onOpenChange={(open) => {
+          if (open || mobileModalOpen || interestConfirmOpen) {
+            return;
+          }
+          setSelectedEvent(null);
+        }}
       >
         {selectedEvent ? (
           <DialogContent className={`modal-panel modal-panel--${modalAccent}`}>
@@ -465,6 +503,59 @@ export default function Home() {
             ) : null}
           </DialogContent>
         ) : null}
+      </Dialog>
+
+      <Dialog open={interestConfirmOpen} onOpenChange={setInterestConfirmOpen}>
+        <DialogContent
+          className={`modal-panel interest-confirm-panel modal-panel--${modalAccent}`}
+          onEscapeKeyDown={(event) => {
+            if (interestSubmitInFlightRef.current) {
+              event.preventDefault();
+            }
+          }}
+          onPointerDownOutside={(event) => {
+            if (interestSubmitInFlightRef.current) {
+              event.preventDefault();
+            }
+          }}
+        >
+          <DialogClose asChild>
+            <Button
+              aria-label="Close confirmation"
+              className="modal-close"
+              disabled={interestStatus === "loading"}
+              type="button"
+              variant="ghost"
+            >
+              <SymbolIcon name="close" />
+            </Button>
+          </DialogClose>
+          <DialogHeader>
+            <DialogTitle>Confirm interest</DialogTitle>
+            <DialogDescription>
+              Save your interest for{" "}
+              <strong className="text-foreground">{selectedEvent?.title}</strong>? You can remove
+              it later from Interested Events Section.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="modal-actions interest-confirm-actions">
+            <Button
+              disabled={interestStatus === "loading"}
+              onClick={() => setInterestConfirmOpen(false)}
+              type="button"
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={interestStatus === "loading"}
+              onClick={handleInterestConfirmProceed}
+              type="button"
+            >
+              {interestStatus === "loading" ? "Saving..." : "Yes, save interest"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
 
       <Dialog open={mobileModalOpen} onOpenChange={setMobileModalOpen}>

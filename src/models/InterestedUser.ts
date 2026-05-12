@@ -22,6 +22,14 @@ const InterestedUserSchema = new mongoose.Schema(
       required: [true, "Please provide a mobile number"],
       match: [/^[6-9]\d{9}$/, "Please provide a valid 10-digit mobile number"],
     },
+    registrationNumber: {
+      type: String,
+      trim: true,
+    },
+    schoolCollegeName: {
+      type: String,
+      trim: true,
+    },
     workshopNames: {
       type: [String],
       default: [],

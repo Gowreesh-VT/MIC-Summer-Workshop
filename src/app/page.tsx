@@ -540,6 +540,7 @@ export default function Home() {
               width={108}
               height={108}
               priority
+              style={{ width: "auto", height: "auto" }}
             />
           </div>
           <h1 id="hero-title">Level Up Your Skills</h1>

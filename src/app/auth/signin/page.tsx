@@ -43,7 +43,14 @@ function SignInCard() {
 
       <section className="auth-card" aria-labelledby="auth-title">
         <div className="auth-logo-frame">
-          <Image src="/mic-logo.png" alt="MIC Logo" width={72} height={72} priority />
+          <Image
+            src="/mic-logo.png"
+            alt="MIC Logo"
+            width={72}
+            height={72}
+            priority
+            style={{ width: "auto", height: "auto" }}
+          />
         </div>
         <span className="tag tag-primary">Player Login</span>
         <h1 id="auth-title">Enter The Arcade</h1>

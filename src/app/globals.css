@@ -39,6 +39,7 @@
 
 html {
   min-height: 100%;
+  scroll-padding-top: 112px;
   scroll-behavior: smooth;
 }
 
@@ -316,6 +317,10 @@ button {
   padding: 0 64px;
 }
 
+.site-nav > * {
+  align-self: center;
+}
+
 .site-nav > .brand {
   grid-column: 1;
   justify-self: start;
@@ -548,6 +553,26 @@ button {
   margin-bottom: 8px;
 }
 
+.member-popover__details {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.member-popover__detail {
+  color: var(--foreground);
+  display: block;
+  font-size: 11px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.member-popover__auth-mobile {
+  display: none;
+  margin-top: 14px;
+  width: 100%;
+}
+
 .member-popover__hint {
   color: var(--muted);
 }
@@ -634,6 +659,7 @@ button {
 
 .event-section {
   margin-bottom: 80px;
+  scroll-margin-top: 10px;
 }
 
 .section-title {
@@ -976,11 +1002,6 @@ button {
   padding: 0 64px;
 }
 
-.footer-logo {
-  filter: grayscale(1);
-  opacity: 0.7;
-}
-
 .footer-brand span,
 .site-footer p {
   font-size: 10px;
@@ -996,7 +1017,7 @@ button {
 }
 
 .footer-links a {
-  color: var(--outline-variant);
+  color: var(--primary);
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1004,7 +1025,7 @@ button {
 }
 
 .footer-links a:hover {
-  color: var(--primary);
+  color: var(--outline-variant);
 }
 
 .site-footer p {
@@ -1511,6 +1532,14 @@ button {
   .nav-actions .member-menu__button .account-icon {
     color: inherit;
     font-size: 24px;
+  }
+
+  .nav-actions > .header-auth-button {
+    display: none;
+  }
+
+  .member-popover__auth-mobile {
+    display: inline-flex;
   }
 
   .event-grid,

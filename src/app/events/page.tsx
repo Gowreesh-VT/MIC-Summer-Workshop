@@ -280,7 +280,7 @@ export default function EventsPage() {
                 <strong>{selectedEvent.type ?? "Workshop"}</strong>
               </div>
             </div>
-            <DialogFooter>
+            {/* <DialogFooter>
               <Button
                 className="modal-secondary"
                 onClick={() => setSelectedEvent(null)}
@@ -298,7 +298,7 @@ export default function EventsPage() {
               >
                 Not-interested
               </Button>
-            </DialogFooter>
+            </DialogFooter> */}
           </DialogContent>
         ) : null}
       </Dialog>

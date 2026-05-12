@@ -106,11 +106,21 @@ type InterestAlert = {
   description: string;
 };
 
+type ProfilePayload = {
+  mobileNumber: string;
+  registrationNumber: string;
+  schoolCollegeName: string;
+};
+
+const pendingWorkshopStorageKey = "mic-pending-workshop-name";
+
 export default function Home() {
   const { data: session, update } = useSession();
   const [selectedEvent, setSelectedEvent] = useState<EventCard | null>(null);
-  const [mobileModalOpen, setMobileModalOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [mobileNumber, setMobileNumber] = useState("");
+  const [registrationNumber, setRegistrationNumber] = useState("");
+  const [schoolCollegeName, setSchoolCollegeName] = useState("");
   const [interestStatus, setInterestStatus] = useState<"idle" | "loading" | "success">("idle");
   const [interestError, setInterestError] = useState("");
   const [memberMenuOpen, setMemberMenuOpen] = useState(false);
@@ -119,6 +129,7 @@ export default function Home() {
   const [interestConfirmOpen, setInterestConfirmOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const interestSubmitInFlightRef = useRef(false);
+  const isVitStudent = isVitStudentEmail(session?.user?.email);
   const modalAccent = selectedEvent?.accent ?? "blue";
   const currentWorkshopIsSaved = Boolean(
     selectedEvent && savedWorkshopNames.includes(selectedEvent.title),
@@ -127,8 +138,11 @@ export default function Home() {
   function handleSelectEvent(event: EventCard) {
     setInterestStatus("idle");
     setInterestError("");
-    setMobileModalOpen(false);
+    setProfileModalOpen(false);
+    window.sessionStorage.removeItem(pendingWorkshopStorageKey);
     setMobileNumber("");
+    setRegistrationNumber("");
+    setSchoolCollegeName("");
     setInterestAlert(null);
     setInterestConfirmOpen(false);
     setSelectedEvent(event);
@@ -150,6 +164,7 @@ export default function Home() {
     async function loadSavedWorkshops() {
       if (!session?.user?.email) {
         setSavedWorkshopNames([]);
+        setProfileModalOpen(false);
         return;
       }
 
@@ -161,8 +176,25 @@ export default function Home() {
         return;
       }
 
-      const data = (await response.json()) as { workshopNames?: string[] };
+      const data = (await response.json()) as {
+        workshopNames?: string[];
+        user?: {
+          mobileNumber?: string;
+          registrationNumber?: string;
+          schoolCollegeName?: string;
+        } | null;
+      };
       setSavedWorkshopNames(data.workshopNames ?? []);
+      setMobileNumber(data.user?.mobileNumber ?? "");
+      setRegistrationNumber(data.user?.registrationNumber ?? "");
+      setSchoolCollegeName(
+        data.user?.schoolCollegeName ?? getDefaultSchoolCollegeName(session.user.email),
+      );
+
+      const email = session.user.email;
+      if (needsProfileDetails(email, data.user)) {
+        setProfileModalOpen(true);
+      }
     }
 
     void loadSavedWorkshops();

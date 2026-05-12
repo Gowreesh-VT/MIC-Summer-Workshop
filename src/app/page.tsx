@@ -423,7 +423,13 @@ export default function Home() {
         />
         <nav className="site-nav" aria-label="Primary navigation">
           <a className="brand" href="#top">
-            <Image src="/mic-logo-removedbg.png" alt="MIC Hexagon Logo" width={120} height={120} />
+            <Image
+              src="/mic-logo-removedbg.png"
+              alt="MIC Hexagon Logo"
+              width={120}
+              height={120}
+              style={{ width: "auto", height: "auto" }}
+            />
             <span>Microsoft Innovations Club</span>
           </a>
           <button
@@ -528,7 +534,13 @@ export default function Home() {
       <main className="main-shell" id="top">
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-logo">
-            <Image src="/mic-logo-removedbg.png" alt="MIC Logo" width={108} height={108} priority />
+            <Image
+              src="/mic-logo.png"
+              alt="MIC Logo"
+              width={108}
+              height={108}
+              priority
+            />
           </div>
           <h1 id="hero-title">Level Up Your Skills</h1>
           <div className="hero-rule" />
@@ -588,6 +600,7 @@ export default function Home() {
               alt="MIC Logo"
               width={60}
               height={60}
+              style={{ width: "auto", height: "auto" }}
             />
             <span>Microsoft Innovations Club</span>
           </div>

@@ -137,7 +137,13 @@ export default function EventsPage() {
         />
         <nav className="site-nav" aria-label="Primary navigation">
           <Link className="brand" href="/">
-            <Image src="/mic-logo-removedbg.png" alt="MIC Hexagon Logo" width={40} height={40} />
+            <Image
+              src="/mic-logo-removedbg.png"
+              alt="MIC Hexagon Logo"
+              width={40}
+              height={40}
+              style={{ width: "auto", height: "auto" }}
+            />
             <span>Microsoft Innovations Club</span>
           </Link>
           <button
@@ -215,7 +221,14 @@ export default function EventsPage() {
       <main className="main-shell" id="top">
         <section className="hero" aria-labelledby="events-hero-title">
           <div className="hero-logo">
-            <Image src="/mic-logo-removedbg.png" alt="MIC Logo" width={96} height={96} priority />
+            <Image
+              src="/mic-logo-removedbg.png"
+              alt="MIC Logo"
+              width={96}
+              height={96}
+              priority
+              style={{ width: "auto", height: "auto" }}
+            />
           </div>
           <h1 id="events-hero-title">Your Interested Events</h1>
           <div className="hero-rule" />

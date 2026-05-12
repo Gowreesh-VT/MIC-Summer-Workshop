@@ -492,13 +492,13 @@ export default function Home() {
                       Email: {session?.user?.email}
                     </span>
                     <span className="member-popover__detail">
-                      Mobile: {mobileNumber || "Not provided"}
-                    </span>
-                    <span className="member-popover__detail">
                       School/College: {schoolCollegeName || "Not provided"}
                     </span>
                     <span className="member-popover__detail">
                       Reg No: {registrationNumber || "Not provided"}
+                    </span>
+                    <span className="member-popover__detail">
+                      Mobile: {mobileNumber || "Not provided"}
                     </span>
                   </div>
                 ) : null}

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { getSession, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EventTile, SymbolIcon } from "@/components/event-cards";
 import { departments, hackathons, type EventCard } from "@/lib/event-data";
+import { installAuthPopupListener } from "@/lib/auth-popup";
 
 function EventPageSymbolIcon({
   name,
@@ -32,7 +33,7 @@ function EventPageSymbolIcon({
 }
 
 export default function EventsPage() {
-  const { data: session, update } = useSession();
+  const { data: session } = useSession();
   const [navOpen, setNavOpen] = useState(false);
   const [memberMenuOpen, setMemberMenuOpen] = useState(false);
   const [savedWorkshopNames, setSavedWorkshopNames] = useState<string[]>([]);
@@ -62,25 +63,10 @@ export default function EventsPage() {
   }, [session?.user?.email]);
 
   useEffect(() => {
-    async function handleAuthMessage(event: MessageEvent) {
-      if (event.origin !== window.location.origin) {
-        return;
-      }
-
-      if (event.data?.type !== "MIC_AUTH_COMPLETE") {
-        return;
-      }
-
-      const updatedSession = await getSession();
-      if (updatedSession?.user?.email) {
-        await update();
-        setMemberMenuOpen(false);
-      }
-    }
-
-    window.addEventListener("message", handleAuthMessage);
-    return () => window.removeEventListener("message", handleAuthMessage);
-  }, [update]);
+    return installAuthPopupListener(() => {
+        window.location.reload();
+    });
+  }, []);
 
   useEffect(() => {
     if (!navOpen) {
@@ -151,7 +137,7 @@ export default function EventsPage() {
         />
         <nav className="site-nav" aria-label="Primary navigation">
           <Link className="brand" href="/">
-            <Image src="/mic-logo.png" alt="MIC Hexagon Logo" width={40} height={40} />
+            <Image src="/mic-logo-removedbg.png" alt="MIC Hexagon Logo" width={40} height={40} />
             <span>Microsoft Innovations Club</span>
           </Link>
           <button
@@ -229,7 +215,7 @@ export default function EventsPage() {
       <main className="main-shell" id="top">
         <section className="hero" aria-labelledby="events-hero-title">
           <div className="hero-logo">
-            <Image src="/mic-logo.png" alt="MIC Logo" width={96} height={96} priority />
+            <Image src="/mic-logo-removedbg.png" alt="MIC Logo" width={96} height={96} priority />
           </div>
           <h1 id="events-hero-title">Your Interested Events</h1>
           <div className="hero-rule" />

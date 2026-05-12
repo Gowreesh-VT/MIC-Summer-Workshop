@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { getSession, signOut, useSession } from "next-auth/react";
+import { getSession, signIn, signOut, useSession } from "next-auth/react";
 import type { FormEvent } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -25,6 +25,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { departments, hackathons, type EventCard } from "@/lib/event-data";
+import { installAuthPopupListener } from "@/lib/auth-popup";
+import { getDefaultSchoolCollegeName, isVitStudentEmail, needsProfileDetails } from "@/lib/profile";
 import { EventTile, HackathonTile, SymbolIcon } from "@/components/event-cards";
 
 type FaqAccent = "blue" | "green" | "red" | "yellow";
@@ -179,30 +181,84 @@ export default function Home() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [navOpen]);
 
-  useEffect(() => {
-    async function handleAuthMessage(event: MessageEvent) {
-      if (event.origin !== window.location.origin) {
-        return;
-      }
-
-      if (event.data?.type !== "MIC_AUTH_COMPLETE") {
-        return;
-      }
-
-      const updatedSession = await getSession();
-      if (updatedSession?.user?.email) {
-        await update();
-        if (selectedEvent) {
-          void submitInterest(selectedEvent.title);
-        }
-      } else {
-        setInterestError("Google sign-in did not complete. Please try again.");
-      }
+  const submitInterest = useCallback(async (workshopName?: string, profile?: ProfilePayload) => {
+    if (interestSubmitInFlightRef.current) {
+      return;
     }
+    interestSubmitInFlightRef.current = true;
+    setInterestError("");
+    setInterestStatus("loading");
 
-    window.addEventListener("message", handleAuthMessage);
-    return () => window.removeEventListener("message", handleAuthMessage);
-  }, [selectedEvent, update]);
+    try {
+      const response = await fetch("/api/interested", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mobileNumber: profile?.mobileNumber ?? mobileNumber,
+          registrationNumber: profile?.registrationNumber ?? registrationNumber,
+          schoolCollegeName: profile?.schoolCollegeName ?? schoolCollegeName,
+          workshopName,
+        }),
+      });
+
+      const contentType = response.headers.get("content-type") ?? "";
+      const data = contentType.includes("application/json")
+        ? ((await response.json()) as {
+            error?: string;
+            requiresProfileDetails?: boolean;
+          })
+        : { error: "Could not save your interest. Please try again." };
+
+      if (!response.ok) {
+        setInterestStatus("idle");
+
+        if (data.requiresProfileDetails) {
+          setInterestConfirmOpen(false);
+          setProfileModalOpen(true);
+          return;
+        }
+
+        setInterestConfirmOpen(false);
+        setInterestError(data.error ?? "Could not save your interest. Please try again.");
+        return;
+      }
+
+      setInterestStatus("success");
+      setMobileNumber("");
+      setRegistrationNumber("");
+      setSchoolCollegeName("");
+      setProfileModalOpen(false);
+      setInterestConfirmOpen(false);
+      setSavedWorkshopNames((currentNames) =>
+        workshopName && currentNames.includes(workshopName)
+          ? currentNames
+          : workshopName
+            ? [...currentNames, workshopName]
+            : currentNames,
+      );
+      setInterestAlert({
+        id: `${workshopName ?? "profile"}-${Date.now()}`,
+        title: workshopName ? "Interest saved" : "Profile saved",
+        description: workshopName
+          ? `Interest saved for ${workshopName}.`
+          : "Your profile details have been saved.",
+      });
+      if (workshopName) {
+        setSelectedEvent(null);
+        window.sessionStorage.removeItem(pendingWorkshopStorageKey);
+      }
+    } finally {
+      interestSubmitInFlightRef.current = false;
+    }
+  }, [mobileNumber, registrationNumber, schoolCollegeName]);
+
+  useEffect(() => {
+    return installAuthPopupListener(() => {
+        window.location.reload();
+    });
+  }, []);
 
   async function handleInterestedClick() {
     setInterestError("");
@@ -220,6 +276,10 @@ export default function Home() {
       return;
     }
 
+    if (selectedEvent) {
+      window.sessionStorage.setItem(pendingWorkshopStorageKey, selectedEvent.title);
+    }
+
     const callbackUrl = `${window.location.origin}/auth/popup-close`;
     const authUrl = `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`;
     const popup = window.open(
@@ -233,82 +293,49 @@ export default function Home() {
     }
   }
 
-  async function submitInterest(workshopName: string, mobileNumber?: string) {
-    if (interestSubmitInFlightRef.current) {
-      return;
-    }
-    interestSubmitInFlightRef.current = true;
-    setInterestError("");
-    setInterestStatus("loading");
-
-    try {
-      const response = await fetch("/api/interested", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          mobileNumber,
-          workshopName,
-        }),
-      });
-
-      const contentType = response.headers.get("content-type") ?? "";
-      const data = contentType.includes("application/json")
-        ? ((await response.json()) as {
-            error?: string;
-            requiresMobileNumber?: boolean;
-          })
-        : { error: "Could not save your interest. Please try again." };
-
-      if (!response.ok) {
-        setInterestStatus("idle");
-
-        if (data.requiresMobileNumber) {
-          setInterestConfirmOpen(false);
-          setMobileModalOpen(true);
-          return;
-        }
-
-        setInterestConfirmOpen(false);
-        setInterestError(data.error ?? "Could not save your interest. Please try again.");
-        return;
-      }
-
-      setInterestStatus("success");
-      setMobileNumber("");
-      setMobileModalOpen(false);
-      setInterestConfirmOpen(false);
-      setSavedWorkshopNames((currentNames) =>
-        currentNames.includes(workshopName) ? currentNames : [...currentNames, workshopName],
-      );
-      setInterestAlert({
-        id: `${workshopName}-${Date.now()}`,
-        title: "Interest saved",
-        description: `Interest saved for ${workshopName}.`,
-      });
-      setSelectedEvent(null);
-    } finally {
-      interestSubmitInFlightRef.current = false;
-    }
-  }
-
   async function handleMobileSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setInterestError("");
+
+    const workshopName =
+      selectedEvent?.title || window.sessionStorage.getItem(pendingWorkshopStorageKey) || "";
 
     if (!/^[6-9]\d{9}$/.test(mobileNumber)) {
       setInterestError("Enter a valid 10-digit Indian mobile number.");
       return;
     }
 
-    if (!selectedEvent) {
-      setInterestError("Please choose a workshop first.");
+    if (!registrationNumber.trim()) {
+      setInterestError("Enter your registration number.");
       return;
     }
 
-    await submitInterest(selectedEvent.title, mobileNumber);
+    if (!isVitStudent && !schoolCollegeName.trim()) {
+      setInterestError("Enter your school or college name.");
+      return;
+    }
+
+    await submitInterest(workshopName, {
+      mobileNumber,
+      registrationNumber,
+      schoolCollegeName: isVitStudent
+        ? getDefaultSchoolCollegeName(session?.user?.email)
+        : schoolCollegeName,
+    });
   }
+
+  useEffect(() => {
+    if (!session?.user?.email) {
+      return;
+    }
+
+    const storedWorkshopName = window.sessionStorage.getItem(pendingWorkshopStorageKey);
+    if (!storedWorkshopName) {
+      return;
+    }
+
+    void submitInterest(storedWorkshopName);
+  }, [session?.user?.email, submitInterest]);
 
   function handleInterestConfirmProceed() {
     if (!selectedEvent) {
@@ -364,7 +391,7 @@ export default function Home() {
         />
         <nav className="site-nav" aria-label="Primary navigation">
           <a className="brand" href="#top">
-            <Image src="/mic-logo.png" alt="MIC Hexagon Logo" width={40} height={40} />
+            <Image src="/mic-logo-removedbg.png" alt="MIC Hexagon Logo" width={120} height={120} />
             <span>Microsoft Innovations Club</span>
           </a>
           <button
@@ -397,14 +424,17 @@ export default function Home() {
             </a>
           </div>
           <div className="nav-actions">
-            {/* <Button
-              className="arcade-btn"
-              disabled
-              title="Registration links are coming soon."
+            <Button
+              className="arcade-btn header-auth-button"
+              onClick={() =>
+                session?.user?.email
+                  ? signOut({ callbackUrl: "/" })
+                  : signIn("google", { callbackUrl: window.location.href })
+              }
               type="button"
             >
-              Register
-            </Button> */}
+              {session?.user?.email ? "Logout" : "Login"}
+            </Button>
             <Popover open={memberMenuOpen} onOpenChange={setMemberMenuOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -422,24 +452,41 @@ export default function Home() {
                   {session?.user?.name ? "Logged in with Google" : "Welcome"}
                 </span>
                 <strong className="member-popover__name">
-                  {session?.user?.name ?? "Welcome"}
+                  Name: {session?.user?.name ?? "Welcome"}
                 </strong>
-                <span className="member-popover__hint">
+                {session?.user?.email ? (
+                  <div className="member-popover__details">
+                    <span className="member-popover__detail">
+                      Email: {session?.user?.email}
+                    </span>
+                    <span className="member-popover__detail">
+                      Mobile: {mobileNumber || "Not provided"}
+                    </span>
+                    <span className="member-popover__detail">
+                      School/College: {schoolCollegeName || "Not provided"}
+                    </span>
+                    <span className="member-popover__detail">
+                      Reg No: {registrationNumber || "Not provided"}
+                    </span>
+                  </div>
+                ) : null}
+                <Button
+                  className="member-popover__auth-mobile"
+                  onClick={() =>
+                    session?.user?.email
+                      ? signOut({ callbackUrl: "/" })
+                      : signIn("google", { callbackUrl: window.location.href })
+                  }
+                  type="button"
+                  variant={session?.user?.email ? "destructive" : "default"}
+                >
+                  {session?.user?.email ? "Logout" : "Login"}
+                </Button>
+                <span className="member-popover__hint" style={{ marginTop: session?.user?.email ? "0.5rem" : "0" }}>
                   {session?.user?.name
                     ? "Your workshop interest will save automatically."
                     : "Sign in with Google to save workshop interest automatically."}
                 </span>
-                {session?.user?.email ? (
-                  <Button
-                    className="member-popover__logout"
-                    onClick={() => signOut({ callbackUrl: "/" })}
-                    size="sm"
-                    type="button"
-                    variant="destructive"
-                  >
-                    Logout
-                  </Button>
-                ) : null}
               </PopoverContent>
             </Popover>
           </div>
@@ -449,7 +496,7 @@ export default function Home() {
       <main className="main-shell" id="top">
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-logo">
-            <Image src="/mic-logo.png" alt="MIC Logo" width={108} height={108} priority />
+            <Image src="/mic-logo-removedbg.png" alt="MIC Logo" width={108} height={108} priority />
           </div>
           <h1 id="hero-title">Level Up Your Skills</h1>
           <div className="hero-rule" />
@@ -505,10 +552,10 @@ export default function Home() {
           <div className="footer-brand">
             <Image
               className="footer-logo"
-              src="/mic-logo.png"
+              src="/mic-logo-removedbg.png"
               alt="MIC Logo"
-              width={32}
-              height={32}
+              width={60}
+              height={60}
             />
             <span>Microsoft Innovations Club</span>
           </div>
@@ -522,9 +569,9 @@ export default function Home() {
       </footer>
 
       <Dialog
-        open={Boolean(selectedEvent) && !mobileModalOpen && !interestConfirmOpen}
+        open={Boolean(selectedEvent) && !profileModalOpen && !interestConfirmOpen}
         onOpenChange={(open) => {
-          if (open || mobileModalOpen || interestConfirmOpen) {
+          if (open || profileModalOpen || interestConfirmOpen) {
             return;
           }
           setSelectedEvent(null);
@@ -636,12 +683,12 @@ export default function Home() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={mobileModalOpen} onOpenChange={setMobileModalOpen}>
+      <Dialog open={profileModalOpen} onOpenChange={setProfileModalOpen}>
         <DialogContent className={`modal-panel mobile-panel modal-panel--${modalAccent}`}>
           <form onSubmit={handleMobileSubmit}>
             <DialogClose asChild>
               <Button
-                aria-label="Close mobile number form"
+                aria-label="Close profile form"
                 className="modal-close"
                 type="button"
                 variant="ghost"
@@ -651,12 +698,36 @@ export default function Home() {
             </DialogClose>
             <span className={`tag tag-${modalAccent}`}>One More Step</span>
             <DialogHeader>
-              <DialogTitle>Confirm Interest</DialogTitle>
+              <DialogTitle>Complete your profile</DialogTitle>
               <DialogDescription>
-                Signed in as {session?.user?.name ?? "Google user"}. Enter your
-                mobile number to save your interest for {selectedEvent?.title}.
+                Signed in as {session?.user?.name ?? "Google user"}. Enter the
+                details needed to save your profile.
               </DialogDescription>
             </DialogHeader>
+            <div className="mobile-field">
+              <Label htmlFor="registration-number">Registration Number</Label>
+              <Input
+                id="registration-number"
+                onChange={(event) => setRegistrationNumber(event.target.value)}
+                placeholder="Your registration number"
+                required
+                type="text"
+                value={registrationNumber}
+              />
+            </div>
+            {isVitStudent ? null : (
+              <div className="mobile-field">
+                <Label htmlFor="school-college-name">School / College Name</Label>
+                <Input
+                  id="school-college-name"
+                  onChange={(event) => setSchoolCollegeName(event.target.value)}
+                  placeholder="Your school or college name"
+                  required
+                  type="text"
+                  value={schoolCollegeName}
+                />
+              </div>
+            )}
             <div className="mobile-field">
               <Label htmlFor="mobile-number">Mobile Number</Label>
               <Input
@@ -673,14 +744,14 @@ export default function Home() {
             {interestError ? <p className="modal-error">{interestError}</p> : null}
             <DialogFooter className="modal-actions">
               <Button
-                onClick={() => setMobileModalOpen(false)}
+                onClick={() => setProfileModalOpen(false)}
                 type="button"
                 variant="outline"
               >
                 Cancel
               </Button>
               <Button disabled={interestStatus === "loading"} type="submit">
-                {interestStatus === "loading" ? "Saving..." : "Save Interest"}
+                {interestStatus === "loading" ? "Saving..." : "Save Profile"}
               </Button>
             </DialogFooter>
           </form>
